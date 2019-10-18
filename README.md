@@ -2,7 +2,7 @@
 
 Content Enhanced BERT-based Text-to-SQL Generation https://arxiv.org/abs/1910.07179
 
-# Train
+# Run
 
 1, `data_and_model/output_entity.py`
 

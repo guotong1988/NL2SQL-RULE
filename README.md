@@ -4,9 +4,13 @@ Content Enhanced BERT-based Text-to-SQL Generation https://arxiv.org/abs/1910.07
 
 # Run
 
-1, `data_and_model/output_entity.py`
+1, Data prepare:
 
-2, `train.py`
+`data_and_model/output_entity.py`
+
+2, Train and eval:
+
+`train.py`
 
 # Results on BERT-Base-Uncased without EG
 | **Model**   | Dev <br />logical form <br />accuracy | Dev<br />execution<br/> accuracy | Test<br /> logical form<br /> accuracy | Test<br /> execution<br /> accuracy |

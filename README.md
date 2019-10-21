@@ -12,12 +12,12 @@ Content Enhanced BERT-based Text-to-SQL Generation https://arxiv.org/abs/1910.07
 
 `train.py`
 
-# Results on BERT-Base-Uncased without EG
+# Results on BERT-Base-Uncased
 | **Model**   | Dev <br />logical form <br />accuracy | Dev<br />execution<br/> accuracy | Test<br /> logical form<br /> accuracy | Test<br /> execution<br /> accuracy |
 | ----------- | ------------------------------------- | -------------------------------- | -------------------------------------- | ----------------------------------- |
 | SQLova    | 80.6                      | 86.5                  | 80.0                        | 85.5                   |
-| Our | 81.7                      | 87.6                | 81.0                      | 86.5 
-
+| Our Methods | 81.7                      | 87.6                | 81.0                      | 86.5 |
+| Our Methods + EG | 84.6                      | 90.3                | 84.0                      | 89.8 |
 # Reference 
 
 https://github.com/naver/sqlova

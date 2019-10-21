@@ -16,6 +16,7 @@ config["toy_size"] = 12
 config["accumulate_gradients"] = 2
 config["EG"] = False
 
+
 def get_loader_wikisql(data_train, data_dev, bS, shuffle_train=True, shuffle_dev=False):
     train_loader = torch.utils.data.DataLoader(
         batch_size=bS,
@@ -50,7 +51,7 @@ def load_wikisql_data(path_wikisql, mode='train', toy_model=False, toy_size=10, 
 
     data = []
     table = {}
-    with open(path_sql) as f:
+    with open(path_sql,mode="r",encoding="utf-8") as f:
         for idx, line in enumerate(f):
             if toy_model and idx >= toy_size:
                 break
@@ -58,7 +59,7 @@ def load_wikisql_data(path_wikisql, mode='train', toy_model=False, toy_size=10, 
             t1 = json.loads(line.strip())
             data.append(t1)
 
-    with open(path_table) as f:
+    with open(path_table,mode="r",encoding="utf-8") as f:
         for idx, line in enumerate(f):
             if toy_model and idx > toy_size:
                 break
@@ -111,13 +112,13 @@ def get_data(path_wikisql, args):
 
 engine_train = DBEngine("train.db")
 engine_dev = DBEngine("dev.db")
-train_data, train_table, dev_data, dev_table, train_loader, dev_loader = get_data("./", config)
+train_data, train_table, dev_data, dev_table, train_loader, dev_loader = get_data("./data_and_model/", config)
 count = 0
 count_agg_0 = 0
 count_agg_not_0 = 0
 
 tokenizer = tokenization.FullTokenizer(
-        vocab_file="vocab_uncased_L-12_H-768_A-12.txt", do_lower_case=True)
+        vocab_file="./data_and_model/vocab_uncased_L-12_H-768_A-12.txt", do_lower_case=True)
 
 
 def contains2(small_str,big_str):

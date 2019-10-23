@@ -205,11 +205,19 @@ def process(data,table,output_name):
             if flag == True:
                 try:
                     final_header[ii] = 1
-                    one_final["header_knowledge"] = final_header
                     break
                 except:
                     print("!!!!")
                     continue
+
+    for row in one_table["rows"]:
+        for iiii, cell in enumerate(row):
+            cell = str(cell).lower()
+            flag, start_, end_ = contains2(re_.sub('', cell), "".join(one_data["question_tok"]).lower())
+            if flag == True:
+                final_header[iiii] = 2
+
+    one_final["header_knowledge"] = final_header
 
     for row in one_table["rows"]:
         for cell in row:

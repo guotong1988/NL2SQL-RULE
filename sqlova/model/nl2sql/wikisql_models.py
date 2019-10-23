@@ -104,12 +104,15 @@ class Seq2SQL_v1(nn.Module):
                      nlu_t, nlu_wp_t, wp_to_wh_index, nlu,
                      beam_size=4,
                      show_p_sc=False, show_p_sa=False,
-                     show_p_wn=False, show_p_wc=False, show_p_wo=False, show_p_wv=False):
+                     show_p_wn=False, show_p_wc=False, show_p_wo=False, show_p_wv=False,
+                     knowledge = None,
+                     knowledge_header = None):
         """
         Execution-guided beam decoding.
         """
         # s_sc = [batch_size, header_len]
-        s_sc = self.scp(wemb_n, l_n, wemb_hpu, l_hpu, l_hs, show_p_sc=show_p_sc)
+        s_sc = self.scp(wemb_n, l_n, wemb_hpu, l_hpu, l_hs, show_p_sc=show_p_sc,
+                        knowledge=knowledge, knowledge_header=knowledge_header)
         prob_sc = F.softmax(s_sc, dim=-1)
         bS, mcL = s_sc.shape
 
@@ -127,7 +130,8 @@ class Seq2SQL_v1(nn.Module):
         # calculate and predict s_sa.
         for i_beam in range(beam_size):
             pr_sc = list( array(pr_sc_beam)[:,i_beam] ) # pr_sc = [batch_size]
-            s_sa = self.sap(wemb_n, l_n, wemb_hpu, l_hpu, l_hs, pr_sc, show_p_sa=show_p_sa)
+            s_sa = self.sap(wemb_n, l_n, wemb_hpu, l_hpu, l_hs, pr_sc, show_p_sa=show_p_sa,
+                        knowledge=knowledge, knowledge_header=knowledge_header)
             prob_sa = F.softmax(s_sa, dim=-1)
             prob_sc_sa[:, i_beam, :] = prob_sa
 
@@ -181,12 +185,14 @@ class Seq2SQL_v1(nn.Module):
         pr_sa_best = list(pr_sa)
 
         # Now, Where-clause beam search.
-        s_wn = self.wnp(wemb_n, l_n, wemb_hpu, l_hpu, l_hs, show_p_wn=show_p_wn)
+        s_wn = self.wnp(wemb_n, l_n, wemb_hpu, l_hpu, l_hs, show_p_wn=show_p_wn,
+                        knowledge=knowledge, knowledge_header=knowledge_header)
         prob_wn = F.softmax(s_wn, dim=-1).detach().to('cpu').numpy()
 
         # Found "executable" most likely 4(=max_num_of_conditions) where-clauses.
         # wc
-        s_wc = self.wcp(wemb_n, l_n, wemb_hpu, l_hpu, l_hs, show_p_wc=show_p_wc, penalty=True)
+        s_wc = self.wcp(wemb_n, l_n, wemb_hpu, l_hpu, l_hs, show_p_wc=show_p_wc, penalty=True,
+                        knowledge=knowledge, knowledge_header=knowledge_header)
         prob_wc = F.sigmoid(s_wc).detach().to('cpu').numpy()
         # pr_wc_sorted_by_prob = pred_wc_sorted_by_prob(s_wc)
 
@@ -199,7 +205,8 @@ class Seq2SQL_v1(nn.Module):
 
         # get most probable max_wn where-clouses
         # wo
-        s_wo_max = self.wop(wemb_n, l_n, wemb_hpu, l_hpu, l_hs, wn=pr_wn_max, wc=pr_wc_max, show_p_wo=show_p_wo)
+        s_wo_max = self.wop(wemb_n, l_n, wemb_hpu, l_hpu, l_hs, wn=pr_wn_max, wc=pr_wc_max, show_p_wo=show_p_wo,
+                        knowledge=knowledge, knowledge_header=knowledge_header)
         prob_wo_max = F.softmax(s_wo_max, dim=-1).detach().to('cpu').numpy()
         # [B, max_wn, n_cond_op]
 
@@ -208,7 +215,8 @@ class Seq2SQL_v1(nn.Module):
         for i_op  in range(self.n_cond_ops-1):
             pr_wo_temp = [ [i_op]*self.max_wn ]*bS
             # wv
-            s_wv = self.wvp(wemb_n, l_n, wemb_hpu, l_hpu, l_hs, wn=pr_wn_max, wc=pr_wc_max, wo=pr_wo_temp, show_p_wv=show_p_wv)
+            s_wv = self.wvp(wemb_n, l_n, wemb_hpu, l_hpu, l_hs, wn=pr_wn_max, wc=pr_wc_max, wo=pr_wo_temp, show_p_wv=show_p_wv,
+                        knowledge=knowledge, knowledge_header=knowledge_header)
             prob_wv = F.softmax(s_wv, dim=-2).detach().to('cpu').numpy()
 
             # prob_wv
@@ -524,7 +532,7 @@ class SCP(nn.Module):
         self.dr = dr
 
         self.question_knowledge_dim = 5
-        self.header_knowledge_dim = 2
+        self.header_knowledge_dim = 3
         self.enc_h = nn.LSTM(input_size=iS, hidden_size=int(hS / 2),
                              num_layers=lS, batch_first=True,
                              dropout=dr, bidirectional=True)
@@ -682,7 +690,7 @@ class SAP(nn.Module):
         self.dr = dr
 
         self.question_knowledge_dim = 5
-        self.header_knowledge_dim = 2
+        self.header_knowledge_dim = 3
         self.enc_h = nn.LSTM(input_size=iS, hidden_size=int(hS / 2),
                              num_layers=lS, batch_first=True,
                              dropout=dr, bidirectional=True)
@@ -778,7 +786,7 @@ class WNP(nn.Module):
 
         self.mL_w = 4  # max where condition number
         self.question_knowledge_dim = 5
-        self.header_knowledge_dim = 2
+        self.header_knowledge_dim = 3
         self.enc_h = nn.LSTM(input_size=iS, hidden_size=int(hS / 2),
                              num_layers=lS, batch_first=True,
                              dropout=dr, bidirectional=True)
@@ -903,7 +911,7 @@ class WCP(nn.Module):
         self.lS = lS
         self.dr = dr
         self.question_knowledge_dim = 5
-        self.header_knowledge_dim = 2
+        self.header_knowledge_dim = 3
         self.enc_h = nn.LSTM(input_size=iS, hidden_size=int(hS / 2),
                              num_layers=lS, batch_first=True,
                              dropout=dr, bidirectional=True)
@@ -1149,7 +1157,7 @@ class WVP_se(nn.Module):
         self.dr = dr
         self.n_cond_ops = n_cond_ops
         self.question_knowledge_dim = 5
-        self.header_knowledge_dim = 2
+        self.header_knowledge_dim = 3
         self.mL_w = 4  # max where condition number
 
         self.enc_h = nn.LSTM(input_size=iS, hidden_size=int(hS / 2),

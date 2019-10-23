@@ -503,7 +503,9 @@ def test(data_loader, data_table, model, model_bert, bert_config, tokenizer,
                                                                                             l_hs, engine, tb,
                                                                                             nlu_t, nlu_tt,
                                                                                             tt_to_t_idx, nlu,
-                                                                                            beam_size=beam_size)
+                                                                                            beam_size=beam_size,
+                                                       knowledge=knowledge,
+                                                       knowledge_header=knowledge_header)
             # sort and generate
             pr_wc, pr_wo, pr_wv, pr_sql_i = sort_and_generate_pr_w(pr_sql_i)
 
@@ -701,8 +703,8 @@ if __name__ == '__main__':
         model, model_bert, tokenizer, bert_config = get_models(args, BERT_PT_PATH)
     else:
         # To start from the pre-trained models, un-comment following lines.
-        path_model_bert = './data_and_model/model_bert_best.pt'
-        path_model = './data_and_model/model_best.pt'
+        path_model_bert = './model_bert_best.pt'
+        path_model = './model_best.pt'
         model, model_bert, tokenizer, bert_config = get_models(args, BERT_PT_PATH, trained=True,
                                                                path_model_bert=path_model_bert, path_model=path_model)
 
@@ -715,6 +717,7 @@ if __name__ == '__main__':
         epoch_best = -1
         for epoch in range(args.tepoch):
             # train
+            acc_train=None
             acc_train, aux_out_train = train(train_loader,
                                              train_table,
                                              model,
@@ -744,8 +747,8 @@ if __name__ == '__main__':
                                                       path_db=path_wikisql,
                                                       st_pos=0,
                                                       dset_name='dev', EG=args.EG)
-
-            print_result(epoch, acc_train, 'train')
+            if acc_train!=None:
+              print_result(epoch, acc_train, 'train')
             print_result(epoch, acc_dev, 'dev')
 
             # save results for the official evaluation

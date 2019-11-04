@@ -18,6 +18,10 @@ Content Enhanced BERT-based Text-to-SQL Generation https://arxiv.org/abs/1910.07
 | SQLova    | 80.6                      | 86.5                  | 80.0                        | 85.5                   |
 | Our Methods | 84.3                      | 90.3                | 83.7                      | 89.2 |
 
+# Trained model
+
+https://drive.google.com/open?id=18MBm9qzobTBgWPZlpA2EErCQtsMhlTN2
+
 # Reference 
 
 https://github.com/naver/sqlova

@@ -18,6 +18,37 @@ Content Enhanced BERT-based Text-to-SQL Generation https://arxiv.org/abs/1910.07
 | SQLova    | 80.6                      | 86.5                  | 80.0                        | 85.5                   |
 | Our Methods | 84.3                      | 90.3                | 83.7                      | 89.2 |
 
+# Data
+One data look:
+```
+{
+	"table_id": "1-1000181-1",
+	"phase": 1,
+	"question": "Tell me what the notes are for South Australia ",
+	"question_tok": ["Tell", "me", "what", "the", "notes", "are", "for", "South", "Australia"],
+	"sql": {
+		"sel": 5,
+		"conds": [
+			[3, 0, "SOUTH AUSTRALIA"]
+		],
+		"agg": 0
+	},
+	"query": {
+		"sel": 5,
+		"conds": [
+			[3, 0, "SOUTH AUSTRALIA"]
+		],
+		"agg": 0
+	},
+	"wvi_corenlp": [
+		[7, 8]
+	],
+	"bertindex_knowledge": [0, 0, 0, 0, 4, 0, 0, 1, 3],
+	"header_knowledge": [0, 0, 0, 0, 0, 1]
+}
+```
+
+
 # Trained model
 
 https://drive.google.com/open?id=18MBm9qzobTBgWPZlpA2EErCQtsMhlTN2

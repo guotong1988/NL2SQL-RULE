@@ -44,7 +44,7 @@ One data look:
 		[7, 8]
 	],
 	"bertindex_knowledge": [0, 0, 0, 0, 4, 0, 0, 1, 3],
-	"header_knowledge": [0, 0, 0, 0, 0, 1]
+	"header_knowledge": [2, 0, 0, 2, 0, 1]
 }
 ```
 

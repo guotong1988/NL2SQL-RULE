@@ -1,5 +1,7 @@
 # NL2SQL-BERT
 
+[![LICENSE](https://img.shields.io/badge/license-Anti%20996-blue.svg)](https://github.com/996icu/996.ICU/blob/master/LICENSE)
+
 Content Enhanced BERT-based Text-to-SQL Generation https://arxiv.org/abs/1910.07179
 
 # Run

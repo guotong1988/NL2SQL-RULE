@@ -27,7 +27,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 def construct_hyper_param(parser):
-    parser.add_argument("--do_train", default=False, action='store_true')
+    parser.add_argument("--do_train", default=True, action='store_true')
     parser.add_argument('--do_infer', default=False, action='store_true')
     parser.add_argument('--infer_loop', default=False, action='store_true')
 

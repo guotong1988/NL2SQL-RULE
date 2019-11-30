@@ -110,8 +110,8 @@ def get_data(path_wikisql, args):
 
     return train_data, train_table, dev_data, dev_table, train_loader, dev_loader
 
-engine_train = DBEngine("train.db")
-engine_dev = DBEngine("dev.db")
+#engine_train = DBEngine("train.db")
+#engine_dev = DBEngine("dev.db")
 train_data, train_table, dev_data, dev_table, train_loader, dev_loader = get_data("./", config)
 count = 0
 count_agg_0 = 0

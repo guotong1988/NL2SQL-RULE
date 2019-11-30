@@ -112,13 +112,13 @@ def get_data(path_wikisql, args):
 
 engine_train = DBEngine("train.db")
 engine_dev = DBEngine("dev.db")
-train_data, train_table, dev_data, dev_table, train_loader, dev_loader = get_data("./data_and_model/", config)
+train_data, train_table, dev_data, dev_table, train_loader, dev_loader = get_data("./", config)
 count = 0
 count_agg_0 = 0
 count_agg_not_0 = 0
 
 tokenizer = tokenization.FullTokenizer(
-        vocab_file="./data_and_model/vocab_uncased_L-12_H-768_A-12.txt", do_lower_case=True)
+        vocab_file="./vocab_uncased_L-12_H-768_A-12.txt", do_lower_case=True)
 
 
 def contains2(small_str,big_str):

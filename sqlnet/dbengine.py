@@ -18,7 +18,7 @@ class DBEngine:
 
     def __init__(self, fdb):
         #fdb = 'data/test.db'
-        self.db = records.Database('sqlite:///{}'.format(fdb))
+        self.db = records.Database('sqlite:///{}'.format(fdb)).get_connection()
 
     def execute_query(self, table_id, query, *args, **kwargs):
         return self.execute(table_id, query.sel_index, query.agg_index, query.conditions, *args, **kwargs)

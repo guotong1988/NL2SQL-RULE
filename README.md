@@ -4,6 +4,14 @@
 
 Content Enhanced BERT-based Text-to-SQL Generation https://arxiv.org/abs/1910.07179
 
+# Requirements
+
+python 3.6
+
+records 0.5.3   
+
+torch 1.1.0   
+
 # Run
 
 1, Data prepare:

@@ -74,7 +74,6 @@ def construct_hyper_param(parser):
     # 1.4 Execution-guided decoding beam-size. It is used only in test.py
     parser.add_argument('--EG',
                         default=False,
-                        action='store_true',
                         help="If present, Execution guided decoding is used in test.")
     parser.add_argument('--beam_size',
                         type=int,

@@ -1,8 +1,8 @@
 # Copyright 2019-present NAVER Corp.
 # Apache License v2.0
 
-# Wonseok Hwang
-# Sep30, 2018
+# Tong Guo
+# Sep30, 2019
 
 
 import os, sys, argparse, re, json
@@ -27,20 +27,19 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 def construct_hyper_param(parser):
-    parser.add_argument("--do_train", default=True, action='store_true')
-    parser.add_argument('--do_infer', default=False, action='store_true')
-    parser.add_argument('--infer_loop', default=False, action='store_true')
+    parser.add_argument("--do_train", default=True)
+    parser.add_argument('--do_infer', default=False)
+    parser.add_argument('--infer_loop', default=False)
 
-    parser.add_argument("--trained", default=False, action='store_true')
+    parser.add_argument("--trained", default=False)
 
     parser.add_argument('--tepoch', default=200, type=int)
-    parser.add_argument("--bS", default=32, type=int,
+    parser.add_argument("--bS", default=8, type=int,
                         help="Batch size")
     parser.add_argument("--accumulate_gradients", default=1, type=int,
                         help="The number of accumulation of backpropagation to effectivly increase the batch size.")
     parser.add_argument('--fine_tune',
-                        default=False,
-                        action='store_true',
+                        default=True,
                         help="If present, BERT is trained.")
 
     parser.add_argument("--model_type", default='Seq2SQL_v1', type=str,
@@ -62,7 +61,7 @@ def construct_hyper_param(parser):
                         type=int,
                         default=42,
                         help="random seed for initialization")
-    parser.add_argument('--no_pretraining', action='store_true', help='Use BERT pretrained model')
+    parser.add_argument('--no_pretraining', default=False, help='Use BERT pretrained model')
     parser.add_argument("--bert_type_abb", default='uS', type=str,
                         help="Type of BERT model to load. e.g.) uS, uL, cS, cL, and mcS")
 

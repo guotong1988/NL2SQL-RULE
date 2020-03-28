@@ -1,4 +1,3 @@
-# Copyright 2019-present NAVER Corp.
 # Apache License v2.0
 
 # Tong Guo
@@ -32,15 +31,17 @@ def construct_hyper_param(parser):
     parser.add_argument('--infer_loop', default=False)
 
     parser.add_argument("--trained", default=False)
-
+    
+    parser.add_argument('--fine_tune',
+                        default=True,
+                        help="If present, BERT is trained.")
+    
     parser.add_argument('--tepoch', default=200, type=int)
     parser.add_argument("--bS", default=8, type=int,
                         help="Batch size")
     parser.add_argument("--accumulate_gradients", default=1, type=int,
                         help="The number of accumulation of backpropagation to effectivly increase the batch size.")
-    parser.add_argument('--fine_tune',
-                        default=True,
-                        help="If present, BERT is trained.")
+    
 
     parser.add_argument("--model_type", default='Seq2SQL_v1', type=str,
                         help="Type of model.")

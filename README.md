@@ -4,6 +4,8 @@
 
 Content Enhanced BERT-based Text-to-SQL Generation https://arxiv.org/abs/1910.07179
 
+(Incorporating database rule into text-to-sql generation)
+
 # Requirements
 
 python 3.6

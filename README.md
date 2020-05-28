@@ -61,6 +61,22 @@ One data look:
 	"header_knowledge": [2, 0, 0, 2, 0, 1]
 }
 ```
+The Table:
+```
+{
+	"id": "1-1000181-1",
+	"header": ["State/territory", "Text/background colour", "Format", "Current slogan", "Current series", "Notes"],
+	"rows": [
+		["Australian Capital Territory", "blue/white", "Yaa·nna", "ACT · CELEBRATION OF A CENTURY 2013", "YIL·00A", "Slogan screenprinted on plate"],
+		["New South Wales", "black/yellow", "aa·nn·aa", "NEW SOUTH WALES", "BX·99·HI", "No slogan on current series"],
+		["New South Wales", "black/white", "aaa·nna", "NSW", "CPX·12A", "Optional white slimline series"],
+		["Northern Territory", "ochre/white", "Ca·nn·aa", "NT · OUTBACK AUSTRALIA", "CB·06·ZZ", "New series began in June 2011"],
+		["Queensland", "maroon/white", "nnn·aaa", "QUEENSLAND · SUNSHINE STATE", "999·TLG", "Slogan embossed on plate"],
+		["South Australia", "black/white", "Snnn·aaa", "SOUTH AUSTRALIA", "S000·AZD", "No slogan on current series"],
+		["Victoria", "blue/white", "aaa·nnn", "VICTORIA - THE PLACE TO BE", "ZZZ·562", "Current series will be exhausted this year"]
+	]
+}
+```
 
 # Trained model
 

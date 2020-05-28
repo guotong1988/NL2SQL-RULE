@@ -4,7 +4,7 @@
 
 Content Enhanced BERT-based Text-to-SQL Generation https://arxiv.org/abs/1910.07179
 
-(Incorporating database design info into text-to-sql generation)
+(Incorporating database design rule into text-to-sql generation)
 
 # Requirements
 

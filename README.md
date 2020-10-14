@@ -26,7 +26,7 @@ Then run
 
 `train.py`
 
-# Results on BERT-Base-Uncased without EG
+# Results on BERT-Base-Uncased without Execution-Guided-Decoding
 | **Model**   | Dev <br />logical form <br />accuracy | Dev<br />execution<br/> accuracy | Test<br /> logical form<br /> accuracy | Test<br /> execution<br /> accuracy |
 | ----------- | ------------------------------------- | -------------------------------- | -------------------------------------- | ----------------------------------- |
 | SQLova    | 80.6                      | 86.5                  | 80.0                        | 85.5                   |

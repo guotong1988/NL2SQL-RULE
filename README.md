@@ -4,7 +4,7 @@
 
 Content Enhanced BERT-based Text-to-SQL Generation https://arxiv.org/abs/1910.07179
 
-## Incorporating database design rule into text-to-sql generation: 
+### Incorporating database design rule into text-to-sql generation: 
 
 1. We use the matching information of the table cells and question string to construct a vector where
 its length is the same to the question length. This question vector mainly improves the performance

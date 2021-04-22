@@ -40,7 +40,7 @@ Then run
 | **Model**   | Dev <br />logical form <br />accuracy | Dev<br />execution<br/> accuracy | Test<br /> logical form<br /> accuracy | Test<br /> execution<br /> accuracy |
 | ----------- | ------------------------------------- | -------------------------------- | -------------------------------------- | ----------------------------------- |
 | SQLova    | 80.6                      | 86.5                  | 80.0                        | 85.5                   |
-| Our Methods | 84.3                      | 90.3                | 83.7                      | 89.2 |
+| Our Method | 84.3                      | 90.3                | 83.7                      | 89.2 |
 
 # Data
 One data look:

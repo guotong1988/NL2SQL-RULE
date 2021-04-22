@@ -9,8 +9,9 @@ Content Enhanced BERT-based Text-to-SQL Generation https://arxiv.org/abs/1910.07
 1. We use the matching information of the table cells and question string to construct a vector where
 its length is the same to the question length. This question vector mainly improves the performance
 of WHERE-VALUE inference result. Because it injects the knowledge that the answer cell and its
-corresponding table header are bound together. If we locate the answer cell then we locate the answer
-column which contains the answer cell.
+corresponding table header are bound together. **If we locate the answer cell then we locate the answer
+column which contains the answer cell.**
+
 2. We use the matching information of all the table headers and the question string to construct a
 vector where its length is the same to the table headers’ length. This header vector mainly improves the
 performance of WHERE-COLUMN inference result.

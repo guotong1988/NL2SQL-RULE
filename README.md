@@ -70,7 +70,7 @@ One data look:
 	"header_knowledge": [2, 0, 0, 2, 0, 1]
 }
 ```
-The Table:
+The Corresponding Table:
 ```
 {
 	"id": "1-1000181-1",

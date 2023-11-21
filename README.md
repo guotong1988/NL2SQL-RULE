@@ -43,7 +43,7 @@ Then run
 | Our Method | 84.3                      | 90.3                | 83.7                      | 89.2 |
 
 # Data
-One data look:
+One data view:
 ```
 {
 	"table_id": "1-1000181-1",

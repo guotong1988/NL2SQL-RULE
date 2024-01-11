@@ -4,6 +4,8 @@
 
 Content Enhanced BERT-based Text-to-SQL Generation https://arxiv.org/abs/1910.07179
 
+# Motivation
+
 ### REASONABLE: Incorporating database design rule into text-to-sql generation: 
 
 1. We use the matching information of the table cells and question string to construct a vector where

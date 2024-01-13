@@ -22,8 +22,6 @@ performance of WHERE-COLUMN inference result.
 
 python 3.6
 
-records 0.5.3   
-
 torch 1.1.0   
 
 # Run

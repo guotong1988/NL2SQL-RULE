@@ -30,7 +30,7 @@ def construct_hyper_param(parser):
     parser.add_argument('--do_infer', default=False)
     parser.add_argument('--infer_loop', default=False)
 
-    parser.add_argument("--trained", default=False)
+    parser.add_argument("--trained", default=True)
 
     parser.add_argument('--fine_tune',
                         default=True,

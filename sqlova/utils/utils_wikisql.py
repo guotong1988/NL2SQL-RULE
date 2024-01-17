@@ -1505,27 +1505,6 @@ def get_cnt_sc_list(g_sc, pr_sc):
 
     return cnt_list
 
-def get_cnt_sc_list__print(g_sc, pr_sc,
-                    g_sql_i, pr_sql_i, nlu, tb):
-    cnt_list = []
-    for b, g_sc1 in enumerate(g_sc):
-        pr_sc1 = pr_sc[b]
-        if pr_sc1 == g_sc1:
-            cnt_list.append(1)
-        else:
-            print(nlu[b])
-            print(tb[b]["header"])
-            print("SELECT", tb[b]["header"][g_sc[b]])
-            if pr_sc[b] < len(tb[b]["header"]):
-                print("SELECT", tb[b]["header"][pr_sc[b]])
-            # print(g_sql_i[b])
-            # print(pr_sql_i[b])
-            # print(tb[b])
-            # print(sql_q[b])
-            print("\n")
-            cnt_list.append(0)
-
-    return cnt_list
 
 
 def get_cnt_sa(g_sa, pr_sa):
@@ -1829,7 +1808,7 @@ def get_cnt_sw_list(g_sc, g_sa, g_wn, g_wc, g_wo, g_wvi,
                     mode):
     """ usalbe only when g_wc was used to find pr_wv
     """
-    cnt_sc = get_cnt_sc_list__print(g_sc, pr_sc, g_sql_i, pr_sql_i, nlu, tb)
+    cnt_sc = get_cnt_sc_list(g_sc, pr_sc, g_sql_i, pr_sql_i, nlu, tb)
     cnt_sa = get_cnt_sc_list(g_sa, pr_sa)
     cnt_wn = get_cnt_sc_list(g_wn, pr_wn)
     cnt_wc = get_cnt_wc_list(g_wc, pr_wc)

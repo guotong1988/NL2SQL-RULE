@@ -783,7 +783,7 @@ if __name__ == '__main__':
                                                   path_db=path_wikisql,
                                                   st_pos=0,
                                                   dset_name='dev', EG=args.EG)
-        print_result(acc_dev, 'dev')
+        print_result(-1, acc_dev, 'dev')
 
     if args.do_infer:
         # To use recent corenlp: https://github.com/stanfordnlp/python-stanford-corenlp

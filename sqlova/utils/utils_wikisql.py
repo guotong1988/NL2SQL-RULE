@@ -1808,7 +1808,7 @@ def get_cnt_sw_list(g_sc, g_sa, g_wn, g_wc, g_wo, g_wvi,
                     mode):
     """ usalbe only when g_wc was used to find pr_wv
     """
-    cnt_sc = get_cnt_sc_list(g_sc, pr_sc, g_sql_i, pr_sql_i, nlu, tb)
+    cnt_sc = get_cnt_sc_list(g_sc, pr_sc)
     cnt_sa = get_cnt_sc_list(g_sa, pr_sa)
     cnt_wn = get_cnt_sc_list(g_wn, pr_wn)
     cnt_wc = get_cnt_wc_list(g_wc, pr_wc)

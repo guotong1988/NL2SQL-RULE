@@ -14,29 +14,27 @@ import torchvision.datasets as dsets
 import torch.nn as nn
 import torch.nn.functional as F
 
-
 from .utils import generate_perm_inv
 from .utils import json_default_type_checker
 
 from .wikisql_formatter import get_squad_style_ans
 
-
-
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
 # Load data -----------------------------------------------------------------------------------------------
 def load_wikisql(path_wikisql, toy_model, toy_size, bert=False, no_w2i=False, no_hs_tok=False, aug=False):
     # Get data
-    train_data, train_table = load_wikisql_data(path_wikisql, mode='train', toy_model=toy_model, toy_size=toy_size, no_hs_tok=no_hs_tok, aug=aug)
-    dev_data, dev_table = load_wikisql_data(path_wikisql, mode='dev', toy_model=toy_model, toy_size=toy_size, no_hs_tok=no_hs_tok)
-
+    train_data, train_table = load_wikisql_data(path_wikisql, mode='train', toy_model=toy_model, toy_size=toy_size,
+                                                no_hs_tok=no_hs_tok, aug=aug)
+    dev_data, dev_table = load_wikisql_data(path_wikisql, mode='dev', toy_model=toy_model, toy_size=toy_size,
+                                            no_hs_tok=no_hs_tok)
 
     # Get word vector
     if no_w2i:
         w2i, wemb = None, None
     else:
         w2i, wemb = load_w2i_wemb(path_wikisql, bert)
-
 
     return train_data, train_table, dev_data, dev_table, w2i, wemb
 
@@ -48,11 +46,11 @@ def load_wikisql_data(path_wikisql, mode='train', toy_model=False, toy_size=10, 
         mode = f"aug.{mode}"
         print('Augmented data is loaded!')
 
-    path_sql = os.path.join(path_wikisql, mode+'_knowledge.jsonl')
+    path_sql = os.path.join(path_wikisql, mode + '_knowledge.jsonl')
     if no_hs_tok:
         path_table = os.path.join(path_wikisql, mode + '.tables.jsonl')
     else:
-        path_table = os.path.join(path_wikisql, mode+'_tok.tables.jsonl')
+        path_table = os.path.join(path_wikisql, mode + '_tok.tables.jsonl')
 
     data = []
     table = {}
@@ -88,6 +86,7 @@ def load_w2i_wemb(path_wikisql, bert=False):
 
         wemb = load(os.path.join(path_wikisql, 'wemb.npy'), )
     return w2i, wemb
+
 
 def get_loader_wikisql(data_train, data_dev, bS, shuffle_train=True, shuffle_dev=False):
     train_loader = torch.utils.data.DataLoader(
@@ -129,8 +128,8 @@ def get_fields_1(t1, tables, no_hs_t=False, no_sql_t=False):
 
     return nlu1, nlu_t1, tid1, sql_i1, sql_q1, sql_t1, tb1, hs_t1, hs1
 
-def get_fields(t1s, tables, no_hs_t=False, no_sql_t=False):
 
+def get_fields(t1s, tables, no_hs_t=False, no_sql_t=False):
     nlu, nlu_t, tid, sql_i, sql_q, sql_t, tb, hs_t, hs = [], [], [], [], [], [], [], [], []
     for t1 in t1s:
         if no_hs_t:
@@ -158,7 +157,6 @@ def word_to_idx1(words1, w2i, no_BE):
     w2i_l1 = []
     l1 = len(words1)  # +2 because of <BEG>, <END>
 
-
     for w in words1:
         idx = w2i.get(w, 0)
         w2i_l1.append(idx)
@@ -182,13 +180,12 @@ def words_to_idx(words, w2i, no_BE=False):
     - Zero-padded when word is not available (teated as <UNK>)
     """
     bS = len(words)
-    l = torch.zeros(bS, dtype=torch.long).to(device) # length of the seq. of words.
-    w2i_l_list = [] # shall be replaced to arr
+    l = torch.zeros(bS, dtype=torch.long).to(device)  # length of the seq. of words.
+    w2i_l_list = []  # shall be replaced to arr
 
     #     wemb_NLq_batch = []
 
     for i, words1 in enumerate(words):
-
         w2i_l1, l1 = word_to_idx1(words1, w2i, no_BE)
         w2i_l_list.append(w2i_l1)
         l[i] = l1
@@ -201,16 +198,17 @@ def words_to_idx(words, w2i, no_BE=False):
 
     return w2i_l, l
 
+
 def hs_to_idx(hs_t, w2i, no_BE=False):
     """ Zero-padded when word is not available (teated as <UNK>)
     Treat each "header tokens" as if they are NL-utterance tokens.
     """
 
     bS = len(hs_t)  # now, B = B_NLq
-    hpu_t = [] # header pseudo-utterance
+    hpu_t = []  # header pseudo-utterance
     l_hs = []
     for hs_t1 in hs_t:
-        hpu_t  += hs_t1
+        hpu_t += hs_t1
         l_hs1 = len(hs_t1)
         l_hs.append(l_hs1)
 
@@ -224,7 +222,6 @@ def encode(lstm, wemb_l, l, return_hidden=False, hc0=None, last_only=False):
     """ [batch_size, max token length, dim_emb]
     """
     bS, mL, eS = wemb_l.shape
-
 
     # sort before packking
     l = array(l)
@@ -242,7 +239,7 @@ def encode(lstm, wemb_l, l, return_hidden=False, hc0=None, last_only=False):
         hc0 = (hc0[0][:, perm_idx], hc0[1][:, perm_idx])
 
     # ipdb.set_trace()
-    packed_wemb_l = packed_wemb_l.float() # I don't know why..
+    packed_wemb_l = packed_wemb_l.float()  # I don't know why..
     packed_wenc, hc_out = lstm(packed_wemb_l, hc0)
     hout, cout = hc_out
 
@@ -256,8 +253,6 @@ def encode(lstm, wemb_l, l, return_hidden=False, hc0=None, last_only=False):
 
     wenc = wenc[perm_idx_inv]
 
-
-
     if return_hidden:
         # hout.shape = [number_of_directoin * num_of_layer, seq_len(=batch size), dim * number_of_direction ] w/ batch_first.. w/o batch_first? I need to see.
         hout = hout[:, perm_idx_inv].to(device)
@@ -269,12 +264,12 @@ def encode(lstm, wemb_l, l, return_hidden=False, hc0=None, last_only=False):
 
 
 def encode_hpu(lstm, wemb_hpu, l_hpu, l_hs):
-    wenc_hpu, hout, cout = encode( lstm,
-                                   wemb_hpu,
-                                   l_hpu,
-                                   return_hidden=True,
-                                   hc0=None,
-                                   last_only=True )
+    wenc_hpu, hout, cout = encode(lstm,
+                                  wemb_hpu,
+                                  l_hpu,
+                                  return_hidden=True,
+                                  hc0=None,
+                                  last_only=True)
 
     wenc_hpu = wenc_hpu.squeeze(1)
     bS_hpu, mL_hpu, eS = wemb_hpu.shape
@@ -294,7 +289,6 @@ def encode_hpu(lstm, wemb_hpu, l_hpu, l_hs):
 
 
 # Statistics -------------------------------------------------------------------------------------------------------------------
-
 
 
 def get_wc1(conds):
@@ -342,23 +336,24 @@ def get_g(sql_i):
     g_wo = []
     g_wv = []
     for b, psql_i1 in enumerate(sql_i):
-        g_sc.append( psql_i1["sel"] )
-        g_sa.append( psql_i1["agg"])
+        g_sc.append(psql_i1["sel"])
+        g_sa.append(psql_i1["agg"])
 
         conds = psql_i1['conds']
         if not psql_i1["agg"] < 0:
-            g_wn.append( len( conds ) )
-            g_wc.append( get_wc1(conds) )
-            g_wo.append( get_wo1(conds) )
-            g_wv.append( get_wv1(conds) )
+            g_wn.append(len(conds))
+            g_wc.append(get_wc1(conds))
+            g_wo.append(get_wo1(conds))
+            g_wv.append(get_wv1(conds))
         else:
             raise EnvironmentError
     return g_sc, g_sa, g_wn, g_wc, g_wo, g_wv
 
+
 def get_g_wvi_corenlp(t):
     g_wvi_corenlp = []
     for t1 in t:
-        g_wvi_corenlp.append( t1['wvi_corenlp'] )
+        g_wvi_corenlp.append(t1['wvi_corenlp'])
     return g_wvi_corenlp
 
 
@@ -375,8 +370,8 @@ def update_w2i_wemb(word, wv, idx_w2i, n_total, w2i, wemb):
     n_total += 1
     return idx_w2i, n_total
 
-def make_w2i_wemb(args, path_save_w2i_wemb, wv, data_train, data_dev, data_test, table_train, table_dev, table_test):
 
+def make_w2i_wemb(args, path_save_w2i_wemb, wv, data_train, data_dev, data_test, table_train, table_dev, table_test):
     w2i = {'<UNK>': 0, '<BEG>': 1, '<END>': 2}  # to use it when embeds NL query.
     idx_w2i = 2
     n_total = 3
@@ -403,6 +398,7 @@ def make_w2i_wemb(args, path_save_w2i_wemb, wv, data_train, data_dev, data_test,
 
     return w2i, wemb
 
+
 def generate_w2i_wemb_table(tables, wv, idx_w2i, n_total, w2i, wemb):
     """ Generate subset of GloVe
         update_w2i_wemb. It uses wv, w2i, wemb, idx_w2i as global variables.
@@ -415,7 +411,7 @@ def generate_w2i_wemb_table(tables, wv, idx_w2i, n_total, w2i, wemb):
 
         # NLq = t1['question']
         # word_tokens = NLq.rstrip().replace('?', '').split(' ')
-        headers = table_contents['header_tok'] # [ ['state/terriotry'], ['current', 'slogan'], [],
+        headers = table_contents['header_tok']  # [ ['state/terriotry'], ['current', 'slogan'], [],
         for header_tokens in headers:
             for token in header_tokens:
                 idx_w2i, n_total = update_w2i_wemb(token, wv, idx_w2i, n_total, w2i, wemb)
@@ -427,6 +423,8 @@ def generate_w2i_wemb_table(tables, wv, idx_w2i, n_total, w2i, wemb):
                 #         idx_w2i, n_total = update_w2i_wemb(token_spl1, wv, idx_w2i, n_total, w2i, wemb)
 
     return idx_w2i, n_total
+
+
 def generate_w2i_wemb(train_data, wv, idx_w2i, n_total, w2i, wemb):
     """ Generate subset of GloVe
         update_w2i_wemb. It uses wv, w2i, wemb, idx_w2i as global variables.
@@ -445,6 +443,7 @@ def generate_w2i_wemb(train_data, wv, idx_w2i, n_total, w2i, wemb):
             n_total += 1
 
     return idx_w2i, n_total
+
 
 def generate_w2i_wemb_e2k_headers(e2k_dicts, wv, idx_w2i, n_total, w2i, wemb):
     """ Generate subset of TAPI from english-to-korean dict of table headers etc..
@@ -477,7 +476,6 @@ def tokenize_hds1(tokenizer, hds1):
     for hds11 in hds1:
         sub_tok = tokenizer.tokenize(hds11)
         hds_all_tok.append(sub_tok)
-
 
 
 def generate_inputs_agg(tokenizer, nlu1_tok, hds1):
@@ -542,10 +540,10 @@ def generate_inputs(tokenizer, nlu1_tok, hds1):
         i_ed_hd = len(tokens)
         i_hds.append((i_st_hd, i_ed_hd))
         segment_ids += [1] * len(sub_tok)
-        if i < len(hds1)-1:
+        if i < len(hds1) - 1:
             tokens.append("[SEP]")
             segment_ids.append(0)
-        elif i == len(hds1)-1:
+        elif i == len(hds1) - 1:
             tokens.append("[SEP]")
             segment_ids.append(1)
         else:
@@ -554,6 +552,7 @@ def generate_inputs(tokenizer, nlu1_tok, hds1):
     i_nlu = (i_st_nlu, i_ed_nlu)
 
     return tokens, segment_ids, i_nlu, i_hds
+
 
 def gen_l_hpu(i_hds):
     """
@@ -566,6 +565,7 @@ def gen_l_hpu(i_hds):
             l_hpu.append(i_hds11[1] - i_hds11[0])
 
     return l_hpu
+
 
 def get_bert_output_s2s(model_bert, tokenizer, nlu_t, hds, sql_vocab, max_seq_length):
     """
@@ -598,7 +598,6 @@ def get_bert_output_s2s(model_bert, tokenizer, nlu_t, hds, sql_vocab, max_seq_le
 
     """
 
-
     l_n = []
     l_hs = []  # The length of columns for each batch
     l_input = []
@@ -621,7 +620,6 @@ def get_bert_output_s2s(model_bert, tokenizer, nlu_t, hds, sql_vocab, max_seq_le
         hds1 = hds[b]
         l_hs.append(len(hds1))
 
-
         # 1. 2nd tokenization using WordPiece
         tt_to_t_idx1 = []  # number indicates where sub-token belongs to in 1st-level-tokens (here, CoreNLP).
         t_to_tt_idx1 = []  # orig_to_tok_idx[i] = start index of i-th-1st-level-token in all_tokens.
@@ -640,8 +638,6 @@ def get_bert_output_s2s(model_bert, tokenizer, nlu_t, hds, sql_vocab, max_seq_le
         l_n.append(len(nlu_tt1))
         #         hds1_all_tok = tokenize_hds1(tokenizer, hds1)
 
-
-
         # [CLS] nlu [SEP] col1 [SEP] col2 [SEP] ...col-n [SEP]
         # 2. Generate BERT inputs & indices.
         # Combine hds1 and sql_vocab
@@ -656,7 +652,7 @@ def get_bert_output_s2s(model_bert, tokenizer, nlu_t, hds, sql_vocab, max_seq_le
         input_mask1 = [1] * len(input_ids1)
 
         # 3. Zero-pad up to the sequence length.
-        l_input.append( len(input_ids1) )
+        l_input.append(len(input_ids1))
         while len(input_ids1) < max_seq_length:
             input_ids1.append(0)
             input_mask1.append(0)
@@ -687,8 +683,8 @@ def get_bert_output_s2s(model_bert, tokenizer, nlu_t, hds, sql_vocab, max_seq_le
     l_hpu = gen_l_hpu(i_hds)
 
     return all_encoder_layer, pooled_output, tokens, i_nlu, i_hds, i_sql_vocab, \
-           l_n, l_hpu, l_hs, l_input, \
-           nlu_tt, t_to_tt_idx, tt_to_t_idx
+        l_n, l_hpu, l_hs, l_input, \
+        nlu_tt, t_to_tt_idx, tt_to_t_idx
 
 
 def get_bert_output(model_bert, tokenizer, nlu_t, hds, max_seq_length):
@@ -733,7 +729,6 @@ def get_bert_output(model_bert, tokenizer, nlu_t, hds, max_seq_length):
         hds1 = hds[b]
         l_hs.append(len(hds1))
 
-
         # 1. 2nd tokenization using WordPiece
         tt_to_t_idx1 = []  # number indicates where sub-token belongs to in 1st-level-tokens (here, CoreNLP).
         t_to_tt_idx1 = []  # orig_to_tok_idx[i] = start index of i-th-1st-level-token in all_tokens.
@@ -751,8 +746,6 @@ def get_bert_output(model_bert, tokenizer, nlu_t, hds, max_seq_length):
 
         l_n.append(len(nlu_tt1))
         #         hds1_all_tok = tokenize_hds1(tokenizer, hds1)
-
-
 
         # [CLS] nlu [SEP] col1 [SEP] col2 [SEP] ...col-n [SEP]
         # 2. Generate BERT inputs & indices.
@@ -794,8 +787,8 @@ def get_bert_output(model_bert, tokenizer, nlu_t, hds, max_seq_length):
     l_hpu = gen_l_hpu(i_hds)
 
     return all_encoder_layer, pooled_output, tokens, i_nlu, i_hds, \
-           l_n, l_hpu, l_hs, \
-           nlu_tt, t_to_tt_idx, tt_to_t_idx
+        l_n, l_hpu, l_hs, \
+        nlu_tt, t_to_tt_idx, tt_to_t_idx
 
 
 def get_bert_output_agg(model_bert, tokenizer, nlu_t, hds, max_seq_length):
@@ -840,7 +833,6 @@ def get_bert_output_agg(model_bert, tokenizer, nlu_t, hds, max_seq_length):
         hds1 = hds[b]
         l_hs.append(len(hds1))
 
-
         # 1. 2nd tokenization using WordPiece
         tt_to_t_idx1 = []  # number indicates where sub-token belongs to in 1st-level-tokens (here, CoreNLP).
         t_to_tt_idx1 = []  # orig_to_tok_idx[i] = start index of i-th-1st-level-token in all_tokens.
@@ -858,8 +850,6 @@ def get_bert_output_agg(model_bert, tokenizer, nlu_t, hds, max_seq_length):
 
         l_n.append(len(nlu_tt1))
         #         hds1_all_tok = tokenize_hds1(tokenizer, hds1)
-
-
 
         # [CLS] nlu [SEP]
         # 2. Generate BERT inputs & indices.
@@ -901,8 +891,9 @@ def get_bert_output_agg(model_bert, tokenizer, nlu_t, hds, max_seq_length):
     l_hpu = gen_l_hpu(i_hds)
 
     return all_encoder_layer, pooled_output, tokens, i_nlu, i_hds, \
-           l_n, l_hpu, l_hs, \
-           nlu_tt, t_to_tt_idx, tt_to_t_idx
+        l_n, l_hpu, l_hs, \
+        nlu_tt, t_to_tt_idx, tt_to_t_idx
+
 
 def get_wemb_n(i_nlu, l_n, hS, num_hidden_layers, all_encoder_layer, num_out_layers_n):
     """
@@ -947,24 +938,22 @@ def get_wemb_h(i_hds, l_hpu, l_hs, hS, num_hidden_layers, all_encoder_layer, num
                 st = i_nolh * hS
                 ed = (i_nolh + 1) * hS
                 wemb_h[b_pu, 0:(i_hds11[1] - i_hds11[0]), st:ed] \
-                    = all_encoder_layer[i_layer][b, i_hds11[0]:i_hds11[1],:]
-
+                    = all_encoder_layer[i_layer][b, i_hds11[0]:i_hds11[1], :]
 
     return wemb_h
 
 
-def get_wemb_bert_agg(bert_config, model_bert, tokenizer, nlu_t, hds, max_seq_length, num_out_layers_n=1, num_out_layers_h=1):
-
+def get_wemb_bert_agg(bert_config, model_bert, tokenizer, nlu_t, hds, max_seq_length, num_out_layers_n=1,
+                      num_out_layers_h=1):
     # get contextual output of all tokens from bert
-    all_encoder_layer, pooled_output, tokens, i_nlu, i_hds,\
-    l_n, l_hpu, l_hs, \
-    nlu_tt, t_to_tt_idx, tt_to_t_idx = get_bert_output_agg(model_bert, tokenizer, nlu_t, hds, max_seq_length)
+    all_encoder_layer, pooled_output, tokens, i_nlu, i_hds, \
+        l_n, l_hpu, l_hs, \
+        nlu_tt, t_to_tt_idx, tt_to_t_idx = get_bert_output_agg(model_bert, tokenizer, nlu_t, hds, max_seq_length)
     # all_encoder_layer: BERT outputs from all layers.
     # pooled_output: output of [CLS] vec.
     # tokens: BERT intput tokens
     # i_nlu: start and end indices of question in tokens
     # i_hds: start and end indices of headers
-
 
     # get the wemb
     wemb_n = get_wemb_n(i_nlu, l_n, bert_config.hidden_size, bert_config.num_hidden_layers, all_encoder_layer,
@@ -974,20 +963,20 @@ def get_wemb_bert_agg(bert_config, model_bert, tokenizer, nlu_t, hds, max_seq_le
     #                     num_out_layers_h)
 
     return wemb_n, None, l_n, l_hpu, l_hs, \
-           nlu_tt, t_to_tt_idx, tt_to_t_idx
+        nlu_tt, t_to_tt_idx, tt_to_t_idx
 
-def get_wemb_bert(bert_config, model_bert, tokenizer, nlu_t, hds, max_seq_length, num_out_layers_n=1, num_out_layers_h=1):
 
+def get_wemb_bert(bert_config, model_bert, tokenizer, nlu_t, hds, max_seq_length, num_out_layers_n=1,
+                  num_out_layers_h=1):
     # get contextual output of all tokens from bert
-    all_encoder_layer, pooled_output, tokens, i_nlu, i_hds,\
-    l_n, l_hpu, l_hs, \
-    nlu_tt, t_to_tt_idx, tt_to_t_idx = get_bert_output(model_bert, tokenizer, nlu_t, hds, max_seq_length)
+    all_encoder_layer, pooled_output, tokens, i_nlu, i_hds, \
+        l_n, l_hpu, l_hs, \
+        nlu_tt, t_to_tt_idx, tt_to_t_idx = get_bert_output(model_bert, tokenizer, nlu_t, hds, max_seq_length)
     # all_encoder_layer: BERT outputs from all layers.
     # pooled_output: output of [CLS] vec.
     # tokens: BERT intput tokens
     # i_nlu: start and end indices of question in tokens
     # i_hds: start and end indices of headers
-
 
     # get the wemb
     wemb_n = get_wemb_n(i_nlu, l_n, bert_config.hidden_size, bert_config.num_hidden_layers, all_encoder_layer,
@@ -997,7 +986,7 @@ def get_wemb_bert(bert_config, model_bert, tokenizer, nlu_t, hds, max_seq_length
                         num_out_layers_h)
 
     return wemb_n, wemb_h, l_n, l_hpu, l_hs, \
-           nlu_tt, t_to_tt_idx, tt_to_t_idx
+        nlu_tt, t_to_tt_idx, tt_to_t_idx
 
 
 def gen_pnt_n(g_wvi, mL_w, mL_nt):
@@ -1023,7 +1012,7 @@ def gen_pnt_n(g_wvi, mL_w, mL_nt):
     # NLq_token_pos = torch.zeros(bS, 5 - 1, mL_g_wvi, self.max_NLq_token_num)
 
     # l_g_wvi = torch.zeros(bS, 5 - 1)
-    pnt_n = torch.zeros(bS, mL_w, mL_g_wvi, mL_nt).to(device) # one hot
+    pnt_n = torch.zeros(bS, mL_w, mL_g_wvi, mL_nt).to(device)  # one hot
     l_g_wvi = torch.zeros(bS, mL_w).to(device)
 
     for b, g_wvi1 in enumerate(g_wvi):
@@ -1040,7 +1029,6 @@ def gen_pnt_n(g_wvi, mL_w, mL_nt):
             pnt_n[b, i_wn + 1:, 0, 1] = 1  # # cannot understand... [<BEG>, <END>]??
             l_g_wvi[b, i_wn + 1:] = 1  # it means there is only <BEG>.
 
-
     return pnt_n, l_g_wvi
 
 
@@ -1055,6 +1043,7 @@ def pred_sc(s_sc):
 
     return pr_sc
 
+
 def pred_sc_beam(s_sc, beam_size):
     """
     return: [ pr_wc1_i, pr_wc2_i, ...]
@@ -1062,12 +1051,12 @@ def pred_sc_beam(s_sc, beam_size):
     # get g_num
     pr_sc_beam = []
 
-
     for s_sc1 in s_sc:
         val, idxes = s_sc1.topk(k=beam_size)
         pr_sc_beam.append(idxes.tolist())
 
     return pr_sc_beam
+
 
 def pred_sa(s_sa):
     """
@@ -1095,6 +1084,7 @@ def pred_wn(s_wn):
 
     return pr_wn
 
+
 def pred_wc_old(sql_i, s_wc):
     """
     return: [ pr_wc1_i, pr_wc2_i, ...]
@@ -1111,6 +1101,7 @@ def pred_wc_old(sql_i, s_wc):
         pr_wc.append(list(pr_wc1))
     return pr_wc
 
+
 def pred_wc(wn, s_wc):
     """
     return: [ pr_wc1_i, pr_wc2_i, ...]
@@ -1126,6 +1117,7 @@ def pred_wc(wn, s_wc):
 
         pr_wc.append(list(pr_wc1))
     return pr_wc
+
 
 def pred_wc_sorted_by_prob(s_wc):
     """
@@ -1167,10 +1159,10 @@ def pred_wvi_se(wn, s_wv):
 
     s_wv_st, s_wv_ed = s_wv.split(1, dim=3)  # [B, 4, mL, 2] -> [B, 4, mL, 1], [B, 4, mL, 1]
 
-    s_wv_st = s_wv_st.squeeze(3) # [B, 4, mL, 1] -> [B, 4, mL]
+    s_wv_st = s_wv_st.squeeze(3)  # [B, 4, mL, 1] -> [B, 4, mL]
     s_wv_ed = s_wv_ed.squeeze(3)
 
-    pr_wvi_st_idx = s_wv_st.argmax(dim=2) # [B, 4, mL] -> [B, 4, 1]
+    pr_wvi_st_idx = s_wv_st.argmax(dim=2)  # [B, 4, mL] -> [B, 4, 1]
     pr_wvi_ed_idx = s_wv_ed.argmax(dim=2)
 
     pr_wvi = []
@@ -1183,6 +1175,7 @@ def pred_wvi_se(wn, s_wv):
         pr_wvi.append(pr_wvi1)
 
     return pr_wvi
+
 
 def pred_wvi_se_beam(max_wn, s_wv, beam_size):
     """
@@ -1198,21 +1191,21 @@ def pred_wvi_se_beam(max_wn, s_wv, beam_size):
 
     s_wv_st, s_wv_ed = s_wv.split(1, dim=3)  # [B, 4, mL, 2] -> [B, 4, mL, 1], [B, 4, mL, 1]
 
-    s_wv_st = s_wv_st.squeeze(3) # [B, 4, mL, 1] -> [B, 4, mL]
+    s_wv_st = s_wv_st.squeeze(3)  # [B, 4, mL, 1] -> [B, 4, mL]
     s_wv_ed = s_wv_ed.squeeze(3)
 
     prob_wv_st = F.softmax(s_wv_st, dim=-1).detach().to('cpu').numpy()
     prob_wv_ed = F.softmax(s_wv_ed, dim=-1).detach().to('cpu').numpy()
 
     k_logit = int(ceil(sqrt(beam_size)))
-    n_pairs = k_logit**2
+    n_pairs = k_logit ** 2
     assert n_pairs >= beam_size
-    values_st, idxs_st = s_wv_st.topk(k_logit) # [B, 4, mL] -> [B, 4, k_logit]
-    values_ed, idxs_ed = s_wv_ed.topk(k_logit) # [B, 4, mL] -> [B, 4, k_logit]
+    values_st, idxs_st = s_wv_st.topk(k_logit)  # [B, 4, mL] -> [B, 4, k_logit]
+    values_ed, idxs_ed = s_wv_ed.topk(k_logit)  # [B, 4, mL] -> [B, 4, k_logit]
 
     # idxs = [B, k_logit, 2]
     # Generate all possible combination of st, ed indices & prob
-    pr_wvi_beam = [] # [B, max_wn, k_logit**2 [st, ed] paris]
+    pr_wvi_beam = []  # [B, max_wn, k_logit**2 [st, ed] paris]
     prob_wvi_beam = zeros([bS, max_wn, n_pairs])
     for b in range(bS):
         pr_wvi_beam1 = []
@@ -1234,14 +1227,14 @@ def pred_wvi_se_beam(max_wn, s_wv, beam_size):
 
                     p1 = prob_wv_st[b, i_wn, st]
                     p2 = prob_wv_ed[b, i_wn, ed]
-                    prob_wvi_beam[b, i_wn, pair_idx] = p1*p2
+                    prob_wvi_beam[b, i_wn, pair_idx] = p1 * p2
             pr_wvi_beam1.append(pr_wvi_beam11)
         pr_wvi_beam.append(pr_wvi_beam1)
-
 
     # prob
 
     return pr_wvi_beam, prob_wvi_beam
+
 
 def is_whitespace_g_wvi(c):
     # if c == " " or c == "\t" or c == "\r" or c == "\n" or ord(c) == 0x202F:
@@ -1249,12 +1242,13 @@ def is_whitespace_g_wvi(c):
         return True
     return False
 
+
 def convert_pr_wvi_to_string(pr_wvi, nlu_t, nlu_wp_t, wp_to_wh_index, nlu):
     """
     - Convert to the string in whilte-space-separated tokens
     - Add-hoc addition.
     """
-    pr_wv_str_wp = [] # word-piece version
+    pr_wv_str_wp = []  # word-piece version
     pr_wv_str = []
     for b, pr_wvi1 in enumerate(pr_wvi):
         pr_wv_str_wp1 = []
@@ -1268,12 +1262,12 @@ def convert_pr_wvi_to_string(pr_wvi, nlu_t, nlu_wp_t, wp_to_wh_index, nlu):
 
             # Ad-hoc modification of ed_idx to deal with wp-tokenization effect.
             # e.g.) to convert "butler cc (" ->"butler cc (ks)" (dev set 1st question).
-            pr_wv_str_wp11 = nlu_wp_t1[st_idx:ed_idx+1]
+            pr_wv_str_wp11 = nlu_wp_t1[st_idx:ed_idx + 1]
             pr_wv_str_wp1.append(pr_wv_str_wp11)
 
             st_wh_idx = wp_to_wh_index1[st_idx]
             ed_wh_idx = wp_to_wh_index1[ed_idx]
-            pr_wv_str11 = nlu_t1[st_wh_idx:ed_wh_idx+1]
+            pr_wv_str11 = nlu_t1[st_wh_idx:ed_wh_idx + 1]
 
             pr_wv_str1.append(pr_wv_str11)
 
@@ -1281,7 +1275,6 @@ def convert_pr_wvi_to_string(pr_wvi, nlu_t, nlu_wp_t, wp_to_wh_index, nlu):
         pr_wv_str.append(pr_wv_str1)
 
     return pr_wv_str, pr_wv_str_wp
-
 
 
 def pred_sw_se_agg(s_sc, s_sa, s_wn, s_wc, s_wo, s_wv):
@@ -1294,6 +1287,7 @@ def pred_sw_se_agg(s_sc, s_sa, s_wn, s_wc, s_wo, s_wv):
 
     return None, pr_sa, None, None, None, None
 
+
 def pred_sw_se(s_sc, s_sa, s_wn, s_wc, s_wo, s_wv):
     pr_sc = pred_sc(s_sc)
     pr_sa = pred_sa(s_sa)
@@ -1303,9 +1297,6 @@ def pred_sw_se(s_sc, s_sa, s_wn, s_wc, s_wo, s_wv):
     pr_wvi = pred_wvi_se(pr_wn, s_wv)
 
     return pr_sc, pr_sa, pr_wn, pr_wc, pr_wo, pr_wvi
-
-
-
 
 
 def merge_wv_t1_eng(where_str_tokens, NLq):
@@ -1323,7 +1314,7 @@ def merge_wv_t1_eng(where_str_tokens, NLq):
                '``': '"',
                '\'\'': '"',
                }
-               # '--': '\u2013'} # this generate error for test 5661 case.
+    # '--': '\u2013'} # this generate error for test 5661 case.
     ret = ''
     double_quote_appear = 0
     for raw_w_token in where_str_tokens:
@@ -1366,14 +1357,12 @@ def merge_wv_t1_eng(where_str_tokens, NLq):
     return ret.strip()
 
 
-
 def find_sql_where_op(gt_sql_tokens_part):
     """
     gt_sql_tokens_part: Between 'WHERE' and 'AND'(if exists).
     """
     # sql_where_op = ['=', 'EQL', '<', 'LT', '>', 'GT']
-    sql_where_op = ['EQL','LT','GT'] # wv sometimes contains =, < or >.
-
+    sql_where_op = ['EQL', 'LT', 'GT']  # wv sometimes contains =, < or >.
 
     for sql_where_op in sql_where_op:
         if sql_where_op in gt_sql_tokens_part:
@@ -1392,6 +1381,7 @@ def find_sub_list(sl, l):
             results.append((ind, ind + sll - 1))
 
     return results
+
 
 def get_g_wvi_bert(nlu, nlu_t, wh_to_wp_index, sql_i, sql_t, tokenizer, nlu_wp_t):
     """
@@ -1424,7 +1414,6 @@ def get_g_wvi_bert(nlu, nlu_t, wh_to_wp_index, sql_i, sql_t, tokenizer, nlu_wp_t
             st_wp_idx = wh_to_wp_index1[st_idx]
             ed_wp_idx = wh_to_wp_index1[ed_idx]
 
-
             g_wvi11 = [st_wp_idx, ed_wp_idx]
             g_wvi1.append(g_wvi11)
             st = ed + 1
@@ -1444,7 +1433,6 @@ def get_g_wvi_bert_from_g_wvi_corenlp(wh_to_wp_index, g_wvi_corenlp):
         wh_to_wp_index1 = wh_to_wp_index[b]
         g_wvi1 = []
         for i_wn, g_wvi_corenlp11 in enumerate(g_wvi_corenlp1):
-
             st_idx, ed_idx = g_wvi_corenlp11
 
             st_wp_idx = wh_to_wp_index1[st_idx]
@@ -1489,13 +1477,13 @@ def get_g_wvi_bert_from_sql_i(nlu, nlu_t, wh_to_wp_index, sql_i, sql_t, tokenize
             st_wp_idx = wh_to_wp_index1[st_idx]
             ed_wp_idx = wh_to_wp_index1[ed_idx]
 
-
             g_wvi11 = [st_wp_idx, ed_wp_idx]
             g_wvi1.append(g_wvi11)
             st = ed + 1
         g_wvi.append(g_wvi1)
 
     return g_wvi
+
 
 def get_cnt_sc(g_sc, pr_sc):
     cnt = 0
@@ -1517,6 +1505,29 @@ def get_cnt_sc_list(g_sc, pr_sc):
 
     return cnt_list
 
+def get_cnt_sc_list__print(g_sc, pr_sc,
+                    g_sql_i, pr_sql_i, nlu, tb):
+    cnt_list = []
+    for b, g_sc1 in enumerate(g_sc):
+        pr_sc1 = pr_sc[b]
+        if pr_sc1 == g_sc1:
+            cnt_list.append(1)
+        else:
+            print(nlu[b])
+            print(tb[b]["header"])
+            print("SELECT", tb[b]["header"][g_sc[b]])
+            if pr_sc[b] < len(tb[b]["header"]):
+                print("SELECT", tb[b]["header"][pr_sc[b]])
+            # print(g_sql_i[b])
+            # print(pr_sql_i[b])
+            # print(tb[b])
+            # print(sql_q[b])
+            print("\n")
+            cnt_list.append(0)
+
+    return cnt_list
+
+
 def get_cnt_sa(g_sa, pr_sa):
     cnt = 0
     for b, g_sa1 in enumerate(g_sa):
@@ -1535,6 +1546,7 @@ def get_cnt_wn(g_wn, pr_wn):
             cnt += 1
 
     return cnt
+
 
 def get_cnt_wc(g_wc, pr_wc):
     cnt = 0
@@ -1555,8 +1567,9 @@ def get_cnt_wc(g_wc, pr_wc):
 
     return cnt
 
+
 def get_cnt_wc_list(g_wc, pr_wc):
-    cnt_list= []
+    cnt_list = []
     for b, g_wc1 in enumerate(g_wc):
 
         pr_wc1 = pr_wc[b]
@@ -1613,13 +1626,14 @@ def get_cnt_wo(g_wn, g_wc, g_wo, pr_wc, pr_wo, mode):
                 cnt += 1
     return cnt
 
+
 def get_cnt_wo_list(g_wn, g_wc, g_wo, pr_wc, pr_wo, mode):
     """ pr's are all sorted as pr_wc are sorted in increasing order (in column idx)
         However, g's are not sorted.
 
         Sort g's in increasing order (in column idx)
     """
-    cnt_list=[]
+    cnt_list = []
     for b, g_wo1 in enumerate(g_wo):
         g_wc1 = g_wc[b]
         pr_wc1 = pr_wc[b]
@@ -1669,7 +1683,7 @@ def get_cnt_wv(g_wn, g_wc, g_wvi, pr_wvi, mode):
         if mode == 'test':
             idx1 = argsort(array(g_wc1))
         elif mode == 'train':
-            idx1 = list( range( g_wn1) )
+            idx1 = list(range(g_wn1))
         else:
             raise ValueError
 
@@ -1695,7 +1709,7 @@ def get_cnt_wv(g_wn, g_wc, g_wvi, pr_wvi, mode):
 def get_cnt_wvi_list(g_wn, g_wc, g_wvi, pr_wvi, mode):
     """ usalbe only when g_wc was used to find pr_wv
     """
-    cnt_list =[]
+    cnt_list = []
     for b, g_wvi1 in enumerate(g_wvi):
         g_wc1 = g_wc[b]
         pr_wvi1 = pr_wvi[b]
@@ -1707,7 +1721,7 @@ def get_cnt_wvi_list(g_wn, g_wc, g_wvi, pr_wvi, mode):
         if mode == 'test':
             idx1 = argsort(array(g_wc1))
         elif mode == 'train':
-            idx1 = list( range( g_wn1) )
+            idx1 = list(range(g_wn1))
         else:
             raise ValueError
 
@@ -1736,7 +1750,7 @@ def get_cnt_wvi_list(g_wn, g_wc, g_wvi, pr_wvi, mode):
 def get_cnt_wv_list(g_wn, g_wc, g_sql_i, pr_sql_i, mode):
     """ usalbe only when g_wc was used to find pr_wv
     """
-    cnt_list =[]
+    cnt_list = []
     for b, g_wc1 in enumerate(g_wc):
         pr_wn1 = len(pr_sql_i[b]["conds"])
         g_wn1 = g_wn[b]
@@ -1746,7 +1760,7 @@ def get_cnt_wv_list(g_wn, g_wc, g_sql_i, pr_sql_i, mode):
         if mode == 'test':
             idx1 = argsort(array(g_wc1))
         elif mode == 'train':
-            idx1 = list( range( g_wn1) )
+            idx1 = list(range(g_wn1))
         else:
             raise ValueError
 
@@ -1774,6 +1788,7 @@ def get_cnt_wv_list(g_wn, g_wc, g_sql_i, pr_sql_i, mode):
 
     return cnt_list
 
+
 def get_cnt_sw(g_sc, g_sa, g_wn, g_wc, g_wo, g_wvi, pr_sc, pr_sa, pr_wn, pr_wc, pr_wo, pr_wvi, mode):
     """ usalbe only when g_wc was used to find pr_wv
     """
@@ -1786,10 +1801,11 @@ def get_cnt_sw(g_sc, g_sa, g_wn, g_wc, g_wo, g_wvi, pr_sc, pr_sa, pr_wn, pr_wc, 
 
     return cnt_sc, cnt_sa, cnt_wn, cnt_wc, cnt_wo, cnt_wv
 
+
 def get_cnt_sw_list_agg(g_sc, g_sa, g_wn, g_wc, g_wo, g_wvi,
-                    pr_sc, pr_sa, pr_wn, pr_wc, pr_wo, pr_wvi,
-                    g_sql_i, pr_sql_i,
-                    mode):
+                        pr_sc, pr_sa, pr_wn, pr_wc, pr_wo, pr_wvi,
+                        g_sql_i, pr_sql_i,
+                        mode):
     """ usalbe only when g_wc was used to find pr_wv
     """
     # cnt_sc = get_cnt_sc_list(g_sc, pr_sc)
@@ -1803,16 +1819,17 @@ def get_cnt_sw_list_agg(g_sc, g_sa, g_wn, g_wc, g_wo, g_wvi,
     #     cnt_wvi = [0]*len(cnt_sc)
     # cnt_wv = get_cnt_wv_list(g_wn, g_wc, g_sql_i, pr_sql_i, mode) # compare using wv-str which presented in original data.
 
-
     return None, cnt_sa, None, None, None, None, None
+
 
 def get_cnt_sw_list(g_sc, g_sa, g_wn, g_wc, g_wo, g_wvi,
                     pr_sc, pr_sa, pr_wn, pr_wc, pr_wo, pr_wvi,
                     g_sql_i, pr_sql_i,
+                    nlu, tb,
                     mode):
     """ usalbe only when g_wc was used to find pr_wv
     """
-    cnt_sc = get_cnt_sc_list(g_sc, pr_sc)
+    cnt_sc = get_cnt_sc_list__print(g_sc, pr_sc, g_sql_i, pr_sql_i, nlu, tb)
     cnt_sa = get_cnt_sc_list(g_sa, pr_sa)
     cnt_wn = get_cnt_sc_list(g_wn, pr_wn)
     cnt_wc = get_cnt_wc_list(g_wc, pr_wc)
@@ -1820,9 +1837,9 @@ def get_cnt_sw_list(g_sc, g_sa, g_wn, g_wc, g_wo, g_wvi,
     if pr_wvi:
         cnt_wvi = get_cnt_wvi_list(g_wn, g_wc, g_wvi, pr_wvi, mode)
     else:
-        cnt_wvi = [0]*len(cnt_sc)
-    cnt_wv = get_cnt_wv_list(g_wn, g_wc, g_sql_i, pr_sql_i, mode) # compare using wv-str which presented in original data.
-
+        cnt_wvi = [0] * len(cnt_sc)
+    cnt_wv = get_cnt_wv_list(g_wn, g_wc, g_sql_i, pr_sql_i,
+                             mode)  # compare using wv-str which presented in original data.
 
     return cnt_sc, cnt_sa, cnt_wn, cnt_wc, cnt_wo, cnt_wvi, cnt_wv
 
@@ -1868,6 +1885,7 @@ def get_cnt_x_list(engine, tb, g_sc, g_sa, g_sql_i, pr_sc, pr_sa, pr_sql_i):
 
     return cnt_x1_list, g_ans, pr_ans
 
+
 def get_mean_grad(named_parameters):
     """
     Get list of mean, std of grad of each parameters
@@ -1876,7 +1894,7 @@ def get_mean_grad(named_parameters):
     mu_list = []
     sig_list = []
     for name, param in named_parameters:
-        if param.requires_grad: # and ("bias" not in name) :
+        if param.requires_grad:  # and ("bias" not in name) :
             # bias makes std = nan as it is of single parameters
             magnitude = param.grad.abs()
             mu_list.append(magnitude.mean())
@@ -1917,6 +1935,7 @@ def save_for_evaluation(path_save, results, dset_name, ):
 
             f.writelines(json_str)
 
+
 def save_for_evaluation_aux(path_save, results, dset_name, ):
     path_save_file = os.path.join(path_save, f'results_aux_{dset_name}.jsonl')
     with open(path_save_file, 'w', encoding='utf-8') as f:
@@ -1940,7 +1959,7 @@ def check_sc_sa_pairs(tb, pr_sc, pr_sa, ):
         hd_types1 = tb[b]['types']
         hd_types11 = hd_types1[pr_sc1]
         if hd_types11 == 'text':
-            if pr_sa1 == 0 or pr_sa1 == 3: # ''
+            if pr_sa1 == 0 or pr_sa1 == 3:  # ''
                 check[b] = True
             else:
                 check[b] = False
@@ -1975,9 +1994,9 @@ def sort_and_generate_pr_w(pr_sql_i):
 
         # Generate
         for i_wn, conds11 in enumerate(conds1):
-            pr_wc1.append( conds11[0])
-            pr_wo1.append( conds11[1])
-            pr_wv1.append( conds11[2])
+            pr_wc1.append(conds11[0])
+            pr_wo1.append(conds11[1])
+            pr_wv1.append(conds11[2])
 
         # sort based on pr_wc1
         idx = argsort(pr_wc1)
@@ -1987,8 +2006,7 @@ def sort_and_generate_pr_w(pr_sql_i):
 
         conds1_sorted = []
         for i, idx1 in enumerate(idx):
-            conds1_sorted.append( conds1[idx1] )
-
+            conds1_sorted.append(conds1[idx1])
 
         pr_wc.append(pr_wc1)
         pr_wo.append(pr_wo1)
@@ -1998,6 +2016,7 @@ def sort_and_generate_pr_w(pr_sql_i):
 
     return pr_wc, pr_wo, pr_wv, pr_sql_i
 
+
 def generate_sql_q(sql_i, tb):
     sql_q = []
     for b, sql_i1 in enumerate(sql_i):
@@ -2006,6 +2025,7 @@ def generate_sql_q(sql_i, tb):
         sql_q.append(sql_q1)
 
     return sql_q
+
 
 def generate_sql_q1(sql_i1, tb1):
     """
@@ -2033,7 +2053,6 @@ def generate_sql_q1(sql_i1, tb1):
     select_agg = agg_ops[sql_i1['agg']]
     select_header = headers[sql_i1['sel']]
     sql_query_part1 = f'SELECT {select_agg}({select_header}) '
-
 
     where_num = len(sql_i1['conds'])
     if where_num == 0:
@@ -2083,8 +2102,6 @@ def gen_g_pnt_idx(g_wvi, sql_i, i_hds, i_sql_vocab, col_pool_type):
     )
     """
     g_pnt_idxs = []
-
-
 
     for b, sql_i1 in enumerate(sql_i):
         i_sql_vocab1 = i_sql_vocab[b]
@@ -2190,9 +2207,8 @@ def generate_sql_q1_s2s(pnt_idxs1, tokens1, tb1):
     for t, pnt_idxs11 in enumerate(pnt_idxs1):
         tok = tokens1[pnt_idxs11]
         sql_query += tok
-        if t < len(pnt_idxs1)-1:
+        if t < len(pnt_idxs1) - 1:
             sql_query += " "
-
 
     return sql_query
 
@@ -2210,7 +2226,7 @@ def find_where_pnt_belong(pnt, vg):
 
 def gen_pnt_i_from_pnt(pnt, i_sql_vocab1, i_nlu1, i_hds1):
     # Find where it belong
-    vg_list = [i_sql_vocab1, [i_nlu1], i_hds1] # as i_nlu has only single st and ed
+    vg_list = [i_sql_vocab1, [i_nlu1], i_hds1]  # as i_nlu has only single st and ed
     i_vg = -1
     i_vg_sub = -1
     for i, vg in enumerate(vg_list):
@@ -2228,8 +2244,8 @@ def gen_i_vg_from_pnt_idxs(pnt_idxs, i_sql_vocab, i_nlu, i_hds):
     for b, pnt_idxs1 in enumerate(pnt_idxs):
         # if properly generated,
         sql_q1_list = []
-        i_vg_list1 = [] # index of (sql_vocab, nlu, hds)
-        i_vg_sub_list1 = [] # index inside of each vocab group
+        i_vg_list1 = []  # index of (sql_vocab, nlu, hds)
+        i_vg_sub_list1 = []  # index inside of each vocab group
 
         for t, pnt in enumerate(pnt_idxs1):
             i_vg, i_vg_sub = gen_pnt_i_from_pnt(pnt, i_sql_vocab[b], i_nlu[b], i_hds[b])
@@ -2243,7 +2259,8 @@ def gen_i_vg_from_pnt_idxs(pnt_idxs, i_sql_vocab, i_nlu, i_hds):
     return i_vg_list, i_vg_sub_list
 
 
-def gen_sql_q_from_i_vg(tokens, nlu, nlu_t, hds, tt_to_t_idx, pnt_start_tok, pnt_end_tok, pnt_idxs, i_vg_list, i_vg_sub_list):
+def gen_sql_q_from_i_vg(tokens, nlu, nlu_t, hds, tt_to_t_idx, pnt_start_tok, pnt_end_tok, pnt_idxs, i_vg_list,
+                        i_vg_sub_list):
     """
     (
         "none", "max", "min", "count", "sum", "average",
@@ -2289,7 +2306,7 @@ def gen_sql_q_from_i_vg(tokens, nlu, nlu_t, hds, tt_to_t_idx, pnt_start_tok, pnt
 
                             # gen conds1
                             if wc_obs:
-                                conds1.append( ['=','>','<'].index(tok) )
+                                conds1.append(['=', '>', '<'].index(tok))
                                 wo_obs = True
 
                         sql_q1_list.append(tok)
@@ -2377,11 +2394,11 @@ def get_wemb_h_FT_Scalar_1(i_hds, l_hs, hS, all_encoder_layer, col_pool_type='st
         for i_hd, st_ed_pair in enumerate(i_hds1):
             st, ed = st_ed_pair
             if col_pool_type == 'start_tok':
-                vec = all_encoder_layer[-1][b, st,:]
+                vec = all_encoder_layer[-1][b, st, :]
             elif col_pool_type == 'end_tok':
                 vec = all_encoder_layer[-1][b, ed, :]
             elif col_pool_type == 'avg':
-                vecs = all_encoder_layer[-1][b, st:ed,:]
+                vecs = all_encoder_layer[-1][b, st:ed, :]
                 vec = vecs.mean(dim=1, keepdim=True)
             else:
                 raise ValueError
@@ -2417,20 +2434,22 @@ def cal_prob(s_sc, s_sa, s_wn, s_wc, s_wo, s_wv, pr_sc, pr_sa, pr_wn, pr_wc, pr_
     p_select = cal_prob_select(p_sc, p_sa)
 
     # calculate where-clause probability
-    p_where  = cal_prob_where(p_wn, p_wc, p_wo, p_wvi)
+    p_where = cal_prob_where(p_wn, p_wc, p_wo, p_wvi)
 
     # calculate total probability
     p_tot = cal_prob_tot(p_select, p_where)
 
     return p_tot, p_select, p_where, p_sc, p_sa, p_wn, p_wc, p_wo, p_wvi
 
+
 def cal_prob_tot(p_select, p_where):
     p_tot = []
     for b, p_select1 in enumerate(p_select):
         p_where1 = p_where[b]
-        p_tot.append( p_select1 * p_where1 )
+        p_tot.append(p_select1 * p_where1)
 
     return p_tot
+
 
 def cal_prob_select(p_sc, p_sa):
     p_select = []
@@ -2441,6 +2460,7 @@ def cal_prob_select(p_sc, p_sa):
 
         p_select.append(p1)
     return p_select
+
 
 def cal_prob_where(p_wn, p_wc, p_wo, p_wvi):
     p_where = []
@@ -2473,6 +2493,7 @@ def cal_prob_sc(s_sc, pr_sc):
 
     return p
 
+
 def cal_prob_sa(s_sa, pr_sa):
     ps = F.softmax(s_sa, dim=1)
     p = []
@@ -2482,6 +2503,7 @@ def cal_prob_sa(s_sa, pr_sa):
         p.append(p1.item())
 
     return p
+
 
 def cal_prob_wn(s_wn, pr_wn):
     ps = F.softmax(s_wn, dim=1)
@@ -2493,6 +2515,7 @@ def cal_prob_wn(s_wn, pr_wn):
 
     return p
 
+
 def cal_prob_wc(s_wc, pr_wc):
     ps = torch.sigmoid(s_wc)
     ps_out = []
@@ -2503,18 +2526,17 @@ def cal_prob_wc(s_wc, pr_wc):
 
     return ps_out
 
+
 def cal_prob_wo(s_wo, pr_wo):
     # assume there is always at least single condition.
     ps = F.softmax(s_wo, dim=2)
     ps_out = []
 
-
     for b, pr_wo1 in enumerate(pr_wo):
         ps_out1 = []
         for n, pr_wo11 in enumerate(pr_wo1):
             ps11 = ps[b][n]
-            ps_out1.append( ps11[pr_wo11].item() )
-
+            ps_out1.append(ps11[pr_wo11].item())
 
         ps_out.append(ps_out1)
 
@@ -2535,6 +2557,7 @@ def cal_prob_wvi_se(s_wv, pr_wvi):
 
     return p_wv
 
+
 def generate_inputs_s2s(tokenizer, nlu1_tt, hds1, sql_vocab1):
     """
     [CLS] sql_vocab [SEP] question [SEP] headers
@@ -2545,7 +2568,6 @@ def generate_inputs_s2s(tokenizer, nlu1_tt, hds1, sql_vocab1):
     segment_ids = []
 
     tokens.append("[CLS]")
-
 
     # sql_vocab
     i_sql_vocab = []
@@ -2566,7 +2588,6 @@ def generate_inputs_s2s(tokenizer, nlu1_tt, hds1, sql_vocab1):
         else:
             raise EnvironmentError
 
-
     # question
     i_st_nlu = len(tokens)  # to use it later
 
@@ -2579,7 +2600,6 @@ def generate_inputs_s2s(tokenizer, nlu1_tt, hds1, sql_vocab1):
     segment_ids.append(0)
     i_nlu = (i_st_nlu, i_ed_nlu)
 
-
     # headers
     i_hds = []
     # for doc
@@ -2590,15 +2610,14 @@ def generate_inputs_s2s(tokenizer, nlu1_tt, hds1, sql_vocab1):
         i_ed_hd = len(tokens)
         i_hds.append((i_st_hd, i_ed_hd))
         segment_ids += [1] * len(sub_tok)
-        if i < len(hds1)-1:
+        if i < len(hds1) - 1:
             tokens.append("[SEP]")
             segment_ids.append(0)
-        elif i == len(hds1)-1:
+        elif i == len(hds1) - 1:
             tokens.append("[SEP]")
             segment_ids.append(1)
         else:
             raise EnvironmentError
-
 
     return tokens, segment_ids, i_sql_vocab, i_nlu, i_hds
 
@@ -2626,4 +2645,3 @@ def sort_pr_wc(pr_wc, g_wc):
 
         pr_wc_sorted.append(pr_wc1_sorted)
     return pr_wc_sorted
-

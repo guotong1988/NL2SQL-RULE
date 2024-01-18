@@ -17,7 +17,7 @@ import random as python_random
 import bert.tokenization as tokenization
 from bert.modeling import BertConfig, BertModel
 
-from sqlova.utils.utils_wikisql import *
+from sqlova.utils.utils_wikisql__with_print import *
 from sqlova.utils.utils import load_jsonl
 from sqlova.model.nl2sql.wikisql_models import *
 from sqlnet.dbengine import DBEngine

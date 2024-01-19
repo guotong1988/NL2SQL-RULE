@@ -1,7 +1,6 @@
-# Copyright 2019-present NAVER Corp.
 # Apache License v2.0
 
-# Wonseok Hwang
+# Tong Guo 2024
 
 import os, json
 import random as rd
@@ -1505,27 +1504,31 @@ def get_cnt_sc_list(g_sc, pr_sc):
 
     return cnt_list
 
+f = open("data_to_label.tsv", mode="a", encoding="utf-8")
+
 def get_cnt_sc_list__print(g_sc, pr_sc,
-                    g_sql_i, pr_sql_i, nlu, tb):
+                           g_sql_i, pr_sql_i, nlu, tb):
     cnt_list = []
     for b, g_sc1 in enumerate(g_sc):
         pr_sc1 = pr_sc[b]
         if pr_sc1 == g_sc1:
             cnt_list.append(1)
         else:
-            print(nlu[b])
-            print(tb[b]["header"])
-            print("SELECT", tb[b]["header"][g_sc[b]])
+            f.write(nlu[b])
+            f.write("\t\t")
+            f.write(" ## ".join(tb[b]["header"]))
+            f.write("\t\t")
+            f.write("SELECT " + tb[b]["header"][g_sc[b]])
+            f.write("\t\t")
             if pr_sc[b] < len(tb[b]["header"]):
-                print("SELECT", tb[b]["header"][pr_sc[b]])
-            # print(g_sql_i[b])
-            # print(pr_sql_i[b])
-            # print(tb[b])
-            # print(sql_q[b])
-            print("\n")
+                f.write("SELECT " + tb[b]["header"][pr_sc[b]])
+            f.write("\t\t")
+            f.write("【end】\n")
+
             cnt_list.append(0)
 
     return cnt_list
+
 
 
 def get_cnt_sa(g_sa, pr_sa):

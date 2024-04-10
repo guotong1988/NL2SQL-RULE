@@ -26,15 +26,14 @@ torch 1.1.0
 
 # Run
 
-Step-1, Data prepare:
-Download all origin data( https://drive.google.com/file/d/1iJvsf38f16el58H4NPINQ7uzal5-V4v4 or https://download.csdn.net/download/guotong1988/13008037) and put them at `data_and_model` directory.
+### Step-1
+Data prepare: Download all origin data( https://drive.google.com/file/d/1iJvsf38f16el58H4NPINQ7uzal5-V4v4 or https://download.csdn.net/download/guotong1988/13008037) and put them at `data_and_model` directory.
 
-Then run
-`data_and_model/output_entity.py`
+Then run `data_and_model/output_entity.py`
 
-Step-2, Train and eval:
+### Step-2
 
-`train.py`
+Train and eval: `train.py`
 
 # Results on BERT-Base-Uncased without Execution-Guided-Decoding
 | **Model**   | Dev <br />logical form <br />accuracy | Dev<br />execution<br/> accuracy | Test<br /> logical form<br /> accuracy | Test<br /> execution<br /> accuracy |
